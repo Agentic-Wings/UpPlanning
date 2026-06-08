@@ -129,16 +129,6 @@ const AssetStorage = () => {
           results: gasData.results
         };
 
-        const backendRes = await fetch(`${API_URL}/upload/metadata`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(metadataPayload)
-        });
-
-        const backendData = await backendRes.json();
-
         try {
           const backendRes = await fetch(`${API_URL}/upload/metadata`, {
             method: 'POST',
@@ -152,6 +142,8 @@ const AssetStorage = () => {
             const backendData = await backendRes.json();
             console.error('Metadata save failed:', backendData.error);
             hasError = true;
+          } else {
+            fetchHistory(); // Segarkan history setelah sukses upload
           }
         } catch (err) {
           console.error('Error saving metadata:', err);
@@ -377,6 +369,30 @@ const AssetStorage = () => {
               </button>
             </div>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Upload Loading Overlay */}
+      {isUploading && createPortal(
+        <div className="modal-overlay animate-fade-in" style={{ zIndex: 9999, flexDirection: 'column', gap: '20px' }}>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            border: '5px solid rgba(255, 74, 74, 0.2)',
+            borderTop: '5px solid #ff4a4a',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <h3 style={{ color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+            Syncing to Google Drive...
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: '-10px' }}>
+            Please don't close or refresh this page.
+          </p>
+          <style>{`
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          `}</style>
         </div>,
         document.body
       )}
