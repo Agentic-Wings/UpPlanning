@@ -135,7 +135,7 @@ exports.getMetadata = async (req, res) => {
   try {
     const snapshot = await db.collection(METADATA_COLLECTION)
       .orderBy('createdAt', 'desc')
-      .limit(20)
+      .limit(100)
       .get();
       
     const history = [];
@@ -146,6 +146,20 @@ exports.getMetadata = async (req, res) => {
     res.status(200).json(history);
   } catch (error) {
     console.error('Get Metadata Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.deleteMetadata = async (req, res) => {
+  if (!db) return res.status(500).json({ error: 'Database not initialized' });
+
+  const { id } = req.params;
+  
+  try {
+    await db.collection(METADATA_COLLECTION).doc(id).delete();
+    res.status(200).json({ message: 'Metadata deleted successfully' });
+  } catch (error) {
+    console.error('Delete Metadata Error:', error);
     res.status(500).json({ error: error.message });
   }
 };

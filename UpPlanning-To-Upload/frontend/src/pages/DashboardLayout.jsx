@@ -31,7 +31,7 @@ const DashboardLayout = ({ theme, toggleTheme }) => {
         <nav className="sidebar-nav">
           <NavLink to="/dashboard" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
             <Calendar size={20} />
-            <span>Calendar Planning</span>
+            <span>Calendar</span>
           </NavLink>
 
           <NavLink to="/dashboard/storage" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>

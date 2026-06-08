@@ -191,6 +191,7 @@ const AssetStorage = () => {
           try {
             await fetch(GAS_URL, {
               method: 'POST',
+              mode: 'no-cors',
               headers: {
                 'Content-Type': 'text/plain;charset=utf-8',
               },
