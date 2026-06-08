@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UploadCloud, FileImage, FolderOpen, CheckCircle2, AlertCircle } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { UploadCloud, FileImage, FolderOpen, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
 import './AssetStorage.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -17,6 +18,10 @@ const AssetStorage = () => {
   // History
   const [uploadHistory, setUploadHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  
+  // Deletion state
+  const [historyToDelete, setHistoryToDelete] = useState(null);
+  const [isDeletingHistory, setIsDeletingHistory] = useState(false);
 
   const fetchHistory = async () => {
     try {
@@ -134,10 +139,22 @@ const AssetStorage = () => {
 
         const backendData = await backendRes.json();
 
-        if (backendRes.ok) {
-          fetchHistory(); // Refresh history
-        } else {
-          console.error('Metadata save failed:', backendData.error);
+        try {
+          const backendRes = await fetch(`${API_URL}/upload/metadata`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(metadataPayload)
+          });
+
+          if (!backendRes.ok) {
+            const backendData = await backendRes.json();
+            console.error('Metadata save failed:', backendData.error);
+            hasError = true;
+          }
+        } catch (err) {
+          console.error('Error saving metadata:', err);
           hasError = true;
         }
       } else {
@@ -145,20 +162,58 @@ const AssetStorage = () => {
         hasError = true;
       }
 
-    } catch (error) {
-      hasError = true;
-      console.error('Error during upload:', error);
-    }
-
-    if (!hasError) {
-      setUploadStatus('success');
-      setSelectedFiles([]); 
-      setNotes('');
-    } else {
+      setUploadStatus(hasError ? 'error' : 'success');
+      if (!hasError) {
+        setSelectedFiles([]);
+        setNotes('');
+      }
+    } catch (err) {
+      console.error('Global Error during upload:', err);
       setUploadStatus('error');
+    } finally {
+      setIsUploading(false);
     }
+  };
+
+  const confirmDeleteHistory = async () => {
+    if (!historyToDelete) return;
+    setIsDeletingHistory(true);
     
-    setIsUploading(false);
+    try {
+      // 1. Delete from Firebase via Vercel Backend
+      const backendRes = await fetch(`${API_URL}/upload/metadata/${historyToDelete.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (backendRes.ok) {
+        // 2. Delete from Google Drive via GAS (send POST with action=delete)
+        if (historyToDelete.driveFolderId && GAS_URL) {
+          try {
+            await fetch(GAS_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
+              },
+              body: JSON.stringify({
+                action: 'delete',
+                folderId: historyToDelete.driveFolderId
+              })
+            });
+          } catch (gasErr) {
+            console.error('GAS Delete Error:', gasErr);
+            // Even if GAS fails (e.g., CORS opacity), if it sent the request, GAS might process it.
+          }
+        }
+        
+        // Refresh history
+        setHistoryToDelete(null);
+        fetchHistory();
+      }
+    } catch (error) {
+      console.error('Error deleting history:', error);
+    } finally {
+      setIsDeletingHistory(false);
+    }
   };
 
   return (
@@ -276,16 +331,27 @@ const AssetStorage = () => {
                   <div 
                     key={idx} 
                     className="asset-card" 
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', position: 'relative' }}
                     onClick={() => window.open(`https://drive.google.com/drive/folders/${item.driveFolderId}`, '_blank')}
                   >
                     <div className="asset-thumbnail">
                       <FileImage size={32} color="var(--text-secondary)" />
                     </div>
-                    <div className="asset-info">
+                    <div className="asset-info" style={{ paddingRight: '40px' }}>
                       <h4 style={{ wordBreak: 'break-all' }}>{item.folderName}</h4>
                       <span>{date} {time} • {item.kategori} • {item.fileCount} files</span>
                     </div>
+                    <button 
+                      className="btn-icon"
+                      style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: '#ff4a4a', borderColor: 'transparent' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHistoryToDelete(item);
+                      }}
+                      title="Delete from History and Google Drive"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
                 );
               })}
@@ -293,6 +359,26 @@ const AssetStorage = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Delete Modal */}
+      {historyToDelete && createPortal(
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="modal-content glass-panel animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <AlertTriangle size={48} color="#ff4a4a" style={{ margin: '0 auto 16px' }} />
+            <h3 style={{ color: '#ef4444', marginBottom: '16px' }}>Confirm Delete</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>
+              Are you sure you want to delete <strong>"{historyToDelete.folderName}"</strong>? This will permanently remove the record from Firebase and move the folder to Trash in Google Drive.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setHistoryToDelete(null)} disabled={isDeletingHistory}>Cancel</button>
+              <button className="btn-danger" onClick={confirmDeleteHistory} disabled={isDeletingHistory}>
+                {isDeletingHistory ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

@@ -209,7 +209,7 @@ const CalendarView = () => {
     <div className="calendar-view">
       <div className="view-header">
         <div>
-          <h1 className="view-title">Content Calendar</h1>
+          <h1 className="view-title">Calendar Planning</h1>
           <p className="view-subtitle">Plan and organize your upcoming content.</p>
         </div>
         <button className="btn-primary" onClick={() => { setSelectedDate(new Date().getDate()); setShowModal(true); }}>

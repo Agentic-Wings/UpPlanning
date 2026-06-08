@@ -143,7 +143,7 @@ const Landing = ({ theme, toggleTheme }) => {
           <h3 className="section-title"><span className="red-arrow">⟩</span> Key Features</h3>
           <div className="features-grid">
             {[
-              { id: 'f1', icon: <LayoutGrid size={24} />, title: 'Content Calendar', desc: 'Plan, organize, and schedule your content ideas in an intuitive calendar view.' },
+              { id: 'f1', icon: <LayoutGrid size={24} />, title: 'Calendar Planning', desc: 'Plan, organize, and schedule your content ideas in an intuitive calendar view.' },
               { id: 'f2', icon: <Cloud size={24} />, title: 'Google Drive Sync', desc: 'Upload visual assets with drag-and-drop. Automatically synced to your Google Drive.' },
               { id: 'f3', icon: <Database size={24} />, title: 'Persistent Memory', desc: 'Firebase integration ensures your ideas and prompt metadata are safely stored and synced.' },
               { id: 'f4', icon: <MessageSquare size={24} />, title: 'Prompt Hub', desc: 'Organize your ChatGPT prompts with quick copy-to-clipboard functionality.' },
