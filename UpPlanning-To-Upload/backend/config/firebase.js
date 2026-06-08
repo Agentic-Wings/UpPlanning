@@ -5,8 +5,13 @@ const path = require('path');
 let db = null;
 
 try {
-  // BULLETPROOF SOLUTION: Statically require the JSON file so Netlify Bundler includes it
-  const serviceAccount = require('./firebase-service-account.json');
+  // BULLETPROOF SOLUTION: Read from ENV var on Vercel, or fallback to local JSON
+  let serviceAccount;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } else {
+    serviceAccount = require('./firebase-service-account.json');
+  }
 
   if (serviceAccount) {
     admin.initializeApp({
