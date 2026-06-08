@@ -3,6 +3,7 @@ import { UploadCloud, FileImage, FolderOpen, CheckCircle2, AlertCircle } from 'l
 import './AssetStorage.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const GAS_URL = import.meta.env.VITE_GAS_URL || '';
 
 const AssetStorage = () => {
   const [dragActive, setDragActive] = useState(false);
@@ -52,45 +53,88 @@ const AssetStorage = () => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve({
+      name: file.name,
+      mimeType: file.type,
+      base64: reader.result
+    });
+    reader.onerror = error => reject(error);
+  });
+
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
+    if (!GAS_URL) {
+      alert("VITE_GAS_URL belum dikonfigurasi di Frontend!");
+      return;
+    }
 
     setIsUploading(true);
     setUploadStatus(null);
     let hasError = false;
 
-    const formData = new FormData();
-    formData.append('kategori', category);
-    formData.append('catatan', notes);
-    
-    // Append all files to the same request under 'assetFiles'
-    selectedFiles.forEach((file) => {
-      formData.append('assetFiles', file);
-    });
-
     try {
-      const res = await fetch(`${API_URL}/upload`, {
+      // 1. Convert files to Base64
+      const base64Files = await Promise.all(selectedFiles.map(file => toBase64(file)));
+      
+      const payload = {
+        kategori: category,
+        files: base64Files
+      };
+
+      // 2. Upload to GAS
+      const gasRes = await fetch(GAS_URL, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify(payload)
       });
+      
+      const gasData = await gasRes.json();
+      
+      if (gasData.status === 'success') {
+        // 3. Save metadata to Vercel Backend
+        const metadataPayload = {
+          kategori: category,
+          catatan: notes,
+          batchFolderId: gasData.batchFolderId,
+          batchFolderName: gasData.batchFolderName,
+          fileCount: selectedFiles.length,
+          results: gasData.results
+        };
 
-      const data = await res.json();
-
-      if (res.ok) {
-        // Add to recent list locally
-        setRecentUploads(prev => [
-          {
-            id: data.dbId || Math.random(),
-            name: `${selectedFiles.length} file (${category})`,
-            category: category,
-            date: 'Baru saja'
+        const backendRes = await fetch(`${API_URL}/upload/metadata`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
           },
-          ...prev
-        ].slice(0, 5));
+          body: JSON.stringify(metadataPayload)
+        });
+
+        const backendData = await backendRes.json();
+
+        if (backendRes.ok) {
+          setRecentUploads(prev => [
+            {
+              id: backendData.dbId || Math.random(),
+              name: `${selectedFiles.length} file (${category})`,
+              category: category,
+              date: 'Baru saja'
+            },
+            ...prev
+          ].slice(0, 5));
+        } else {
+          console.error('Metadata save failed:', backendData.error);
+          hasError = true;
+        }
       } else {
+        console.error('GAS Upload failed:', gasData.message);
         hasError = true;
-        console.error('Upload failed:', data.error);
       }
+
     } catch (error) {
       hasError = true;
       console.error('Error during upload:', error);
@@ -98,7 +142,7 @@ const AssetStorage = () => {
 
     if (!hasError) {
       setUploadStatus('success');
-      setSelectedFiles([]); // Clear list on success
+      setSelectedFiles([]); 
       setNotes('');
     } else {
       setUploadStatus('error');

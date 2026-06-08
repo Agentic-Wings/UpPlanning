@@ -8,5 +8,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.post('/', upload.array('assetFiles', 20), uploadController.uploadFile);
+router.post('/metadata', uploadController.saveMetadata);
 
 module.exports = router;

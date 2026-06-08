@@ -100,3 +100,31 @@ exports.uploadFile = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.saveMetadata = async (req, res) => {
+  if (!db) return res.status(500).json({ error: 'Database not initialized' });
+
+  try {
+    const { kategori, catatan, batchFolderId, batchFolderName, fileCount, results } = req.body;
+
+    const metadata = {
+      driveFolderId: batchFolderId,
+      kategori: kategori || 'Umum',
+      catatan: catatan || '',
+      fileCount: fileCount || 0,
+      folderName: batchFolderName,
+      createdAt: new Date().toISOString(),
+      gasResults: results || []
+    };
+
+    const docRef = await db.collection(METADATA_COLLECTION).add(metadata);
+
+    res.status(201).json({
+      message: 'Metadata saved successfully',
+      dbId: docRef.id
+    });
+  } catch (error) {
+    console.error('Save Metadata Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
