@@ -31,7 +31,7 @@ const DashboardLayout = ({ theme, toggleTheme }) => {
         <nav className="sidebar-nav">
           <NavLink to="/dashboard" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
             <Calendar size={20} />
-            <span>Kalender</span>
+            <span>Calendar</span>
           </NavLink>
 
           <NavLink to="/dashboard/storage" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
@@ -48,7 +48,7 @@ const DashboardLayout = ({ theme, toggleTheme }) => {
         <div className="sidebar-footer">
           <button className="nav-item btn-logout" onClick={() => navigate('/')}>
             <LogOut size={20} />
-            <span>Kembali</span>
+            <span>Back to Home</span>
           </button>
         </div>
       </aside>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import './CalendarView.css';
 
@@ -44,7 +45,7 @@ const CalendarView = () => {
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
 
-  const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
@@ -208,11 +209,11 @@ const CalendarView = () => {
     <div className="calendar-view">
       <div className="view-header">
         <div>
-          <h1 className="view-title">Kalender Konten</h1>
-          <p className="view-subtitle">Rencanakan dan atur konten Anda yang akan datang.</p>
+          <h1 className="view-title">Content Calendar</h1>
+          <p className="view-subtitle">Plan and organize your upcoming content.</p>
         </div>
         <button className="btn-primary" onClick={() => { setSelectedDate(new Date().getDate()); setShowModal(true); }}>
-          <Plus size={18} /> Tambah Ide
+          <Plus size={18} /> Add Idea
         </button>
       </div>
 
@@ -231,25 +232,25 @@ const CalendarView = () => {
         </div>
 
         <div className="calendar-grid">
-          {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => (
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <div key={day} className="weekday-header">{day}</div>
           ))}
           {renderDays()}
         </div>
       </div>
 
-      {showModal && (
-        <div className="modal-overlay">
+      {showModal && createPortal(
+        <div className="modal-overlay" style={{ zIndex: 1000 }}>
           <div className="modal-content glass-panel animate-fade-in">
             <h3>
               {editingEvent 
-                ? 'Edit Jadwal Konten' 
-                : (selectedDate ? `Tambah Ide untuk ${selectedDate} ${monthNames[currentDate.getMonth()]}` : 'Tambah Ide Baru')}
+                ? 'Edit Content Schedule' 
+                : (selectedDate ? `Add Idea for ${selectedDate} ${monthNames[currentDate.getMonth()]}` : 'Add New Idea')}
             </h3>
             
             {editingEvent && (
               <div className="form-group">
-                <label>Tanggal</label>
+                <label>Date</label>
                 <input 
                   type="date" 
                   value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`}
@@ -272,19 +273,19 @@ const CalendarView = () => {
             )}
             
             <div className="form-group">
-              <label>Judul Ide *</label>
+              <label>Idea Title *</label>
               <input 
                 type="text" 
-                placeholder="Contoh: Tools AI untuk Produktivitas" 
+                placeholder="Example: AI Tools for Productivity" 
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
               />
             </div>
             
             <div className="form-group">
-              <label>Jenis Konten</label>
+              <label>Content Type</label>
               <select value={newType} onChange={e => setNewType(e.target.value)}>
-                <option value="Poster Edukasi">Poster Edukasi</option>
+                <option value="Poster Edukasi">Educational Poster</option>
                 <option value="Feed">Feed</option>
                 <option value="Carousel">Carousel</option>
                 <option value="Reels">Reels</option>
@@ -293,10 +294,10 @@ const CalendarView = () => {
             </div>
             
             <div className="form-group">
-              <label>Deskripsi</label>
+              <label>Description</label>
               <textarea 
                 rows="4" 
-                placeholder="Penjelasan singkat tentang konten..."
+                placeholder="Brief description of the content..."
                 value={newDescription}
                 onChange={e => setNewDescription(e.target.value)}
               ></textarea>
@@ -305,34 +306,36 @@ const CalendarView = () => {
             <div className="modal-actions" style={{ justifyContent: editingEvent ? 'space-between' : 'flex-end' }}>
               {editingEvent && (
                 <button className="btn-danger" onClick={() => setShowConfirmDelete(true)} disabled={isSaving}>
-                  Hapus
+                  Delete
                 </button>
               )}
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn-secondary" onClick={() => setShowModal(false)} disabled={isSaving}>Batal</button>
+                <button className="btn-secondary" onClick={() => setShowModal(false)} disabled={isSaving}>Cancel</button>
                 <button className="btn-primary" onClick={handleSaveEvent} disabled={isSaving || !newTitle}>
-                  {isSaving ? 'Menyimpan...' : (editingEvent ? 'Simpan Perubahan' : 'Simpan Ide')}
+                  {isSaving ? 'Saving...' : (editingEvent ? 'Save Changes' : 'Save Idea')}
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Confirmation Delete Modal */}
-      {showConfirmDelete && (
+      {showConfirmDelete && createPortal(
         <div className="modal-overlay" style={{ zIndex: 1100 }}>
           <div className="modal-content glass-panel animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center' }}>
-            <h3 style={{ color: '#ef4444', marginBottom: '16px' }}>Konfirmasi Hapus</h3>
+            <h3 style={{ color: '#ef4444', marginBottom: '16px' }}>Confirm Delete</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>
-              Apakah Anda yakin ingin menghapus jadwal <strong>"{editingEvent?.judul}"</strong>? Tindakan ini tidak dapat dibatalkan.
+              Are you sure you want to delete the schedule <strong>"{editingEvent?.judul}"</strong>? This action cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button className="btn-secondary" onClick={() => setShowConfirmDelete(false)}>Batal</button>
-              <button className="btn-danger" onClick={handleDeleteEvent}>Ya, Hapus</button>
+              <button className="btn-secondary" onClick={() => setShowConfirmDelete(false)}>Cancel</button>
+              <button className="btn-danger" onClick={handleDeleteEvent}>Yes, Delete</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

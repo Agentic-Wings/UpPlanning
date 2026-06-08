@@ -46,7 +46,7 @@ const Landing = ({ theme, toggleTheme }) => {
         </div>
         <div className="nav-actions">
           <button className="btn-secondary glow-btn-hover" onClick={() => navigate('/dashboard')}>
-            Mulai
+            Get Started
           </button>
           <button className="btn-icon glow-btn-hover" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -80,7 +80,7 @@ const Landing = ({ theme, toggleTheme }) => {
 
         {/* Quick Start Section */}
         <div className="quick-start-section">
-          <h3 className="section-title"><span className="red-arrow">⟩</span> Mulai Cepat</h3>
+          <h3 className="section-title"><span className="red-arrow">⟩</span> Quick Start</h3>
           <div className="terminal-box">
             <div className="terminal-header">
               {/* Window controls */}
@@ -140,15 +140,15 @@ const Landing = ({ theme, toggleTheme }) => {
 
         {/* Features Section */}
         <div className="features-section">
-          <h3 className="section-title"><span className="red-arrow">⟩</span> Fitur Utama</h3>
+          <h3 className="section-title"><span className="red-arrow">⟩</span> Key Features</h3>
           <div className="features-grid">
             {[
-              { id: 'f1', icon: <LayoutGrid size={24} />, title: 'Kalender Konten', desc: 'Rencanakan, atur, dan jadwalkan ide konten Anda dalam tampilan kalender yang intuitif.' },
-              { id: 'f2', icon: <Cloud size={24} />, title: 'Sinkronisasi Google Drive', desc: 'Unggah aset visual dengan seret-dan-lepas. Otomatis tersinkronisasi ke Google Drive Anda.' },
-              { id: 'f3', icon: <Database size={24} />, title: 'Memori Persisten', desc: 'Integrasi Firebase memastikan ide dan metadata prompt Anda tersimpan dan tersinkronisasi dengan aman.' },
-              { id: 'f4', icon: <MessageSquare size={24} />, title: 'Pusat Prompt', desc: 'Atur prompt ChatGPT Anda dengan fungsionalitas salin-ke-papan-klip yang cepat.' },
-              { id: 'f5', icon: <Terminal size={24} />, title: 'Akses Sistem Penuh', desc: 'Ringan dan dapat dimodifikasi. Dibangun dengan React dan Vite untuk performa yang sangat cepat.' },
-              { id: 'f6', icon: <BrainCircuit size={24} />, title: 'Siap AI', desc: 'Dirancang khusus untuk melengkapi alur kerja AI generatif Anda untuk media sosial.' },
+              { id: 'f1', icon: <LayoutGrid size={24} />, title: 'Content Calendar', desc: 'Plan, organize, and schedule your content ideas in an intuitive calendar view.' },
+              { id: 'f2', icon: <Cloud size={24} />, title: 'Google Drive Sync', desc: 'Upload visual assets with drag-and-drop. Automatically synced to your Google Drive.' },
+              { id: 'f3', icon: <Database size={24} />, title: 'Persistent Memory', desc: 'Firebase integration ensures your ideas and prompt metadata are safely stored and synced.' },
+              { id: 'f4', icon: <MessageSquare size={24} />, title: 'Prompt Hub', desc: 'Organize your ChatGPT prompts with quick copy-to-clipboard functionality.' },
+              { id: 'f5', icon: <Terminal size={24} />, title: 'Full System Access', desc: 'Lightweight and modifiable. Built with React and Vite for blazing fast performance.' },
+              { id: 'f6', icon: <BrainCircuit size={24} />, title: 'AI-Ready', desc: 'Specifically designed to complement your generative AI workflow for social media.' },
             ].map(({ id, icon, title, desc }) => (
               <div key={id} className="feature-card">
                 <div className="f-icon">{icon}</div>
@@ -161,7 +161,7 @@ const Landing = ({ theme, toggleTheme }) => {
 
         {/* Integrations Section */}
         <div className="integrations-section">
-          <h3 className="stack-title"><span className="red-arrow">{'⟩'}</span> Bekerja Dengan Aplikasi Anda</h3>
+          <h3 className="stack-title"><span className="red-arrow">{'⟩'}</span> Works With Your Apps</h3>
           <div className="stack-grid">
             {/* Row 1 — Messaging & AI (8 items) */}
             <div className="stack-row">

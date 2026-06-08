@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Copy, Plus, Search, Tag, CheckCircle2, Trash2, Edit2, AlertTriangle } from 'lucide-react';
 import './PromptHub.css';
 
@@ -124,11 +125,11 @@ const PromptHub = () => {
     <div className="prompt-hub">
       <div className="view-header">
         <div>
-          <h1 className="view-title">Pusat Prompt</h1>
-          <p className="view-subtitle">Simpan, kelola, dan salin cepat prompt AI favorit Anda.</p>
+          <h1 className="view-title">Prompt Hub</h1>
+          <p className="view-subtitle">Save, manage, and quickly copy your favorite AI prompts.</p>
         </div>
         <button className="btn-primary" onClick={handleOpenAdd}>
-          <Plus size={18} /> Prompt Baru
+          <Plus size={18} /> New Prompt
         </button>
       </div>
 
@@ -137,26 +138,26 @@ const PromptHub = () => {
           <Search size={18} className="search-icon" />
           <input 
             type="text" 
-            placeholder="Cari berdasarkan judul atau kategori..." 
+            placeholder="Search by title or category..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <div className="filter-group">
           <select className="filter-select">
-            <option value="All">Semua Kategori</option>
+            <option value="All">All Categories</option>
           </select>
         </div>
       </div>
 
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-          Memuat prompt...
+          Loading prompts...
         </div>
       ) : (
         <div className="prompts-grid">
           {filteredPrompts.length === 0 ? (
-            <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>Belum ada prompt ditemukan.</div>
+            <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>No prompts found.</div>
           ) : (
             filteredPrompts.map(prompt => (
               <div key={prompt.id} className="prompt-card glass-panel">
@@ -173,7 +174,7 @@ const PromptHub = () => {
                 
                 <div className="prompt-footer">
                   <span className="prompt-date">
-                    Ditambahkan {new Date(prompt.createdAt).toLocaleDateString('id-ID')}
+                    Added {new Date(prompt.createdAt).toLocaleDateString('en-US')}
                   </span>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
@@ -188,14 +189,14 @@ const PromptHub = () => {
                       className="btn-icon"
                       style={{ width: '30px', height: '30px', color: '#ff4a4a', borderColor: 'transparent' }}
                       onClick={() => handleDeleteClick(prompt.id)}
-                      title="Hapus Prompt"
+                      title="Delete Prompt"
                     >
                       <Trash2 size={14} />
                     </button>
                     <button 
                       className={`btn-copy ${copiedId === prompt.id ? 'copied' : ''}`}
                       onClick={() => handleCopy(prompt.id, prompt.isiTeks)}
-                      title="Salin ke Papan Klip"
+                      title="Copy to Clipboard"
                     >
                       {copiedId === prompt.id ? (
                         <CheckCircle2 size={16} />
@@ -211,67 +212,69 @@ const PromptHub = () => {
         </div>
       )}
 
-      {showModal && (
-        <div className="modal-overlay">
+      {showModal && createPortal(
+        <div className="modal-overlay" style={{ zIndex: 1000 }}>
           <div className="modal-content glass-panel animate-fade-in">
-            <h3>{editingId ? 'Edit Prompt' : 'Tambah Prompt Baru'}</h3>
+            <h3>{editingId ? 'Edit Prompt' : 'Add New Prompt'}</h3>
             
             <div className="form-group">
-              <label>Judul Prompt *</label>
+              <label>Prompt Title *</label>
               <input 
                 type="text" 
-                placeholder="Contoh: Intro Blog SEO" 
+                placeholder="Example: SEO Blog Intro" 
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
               />
             </div>
             
             <div className="form-group">
-              <label>Kategori / Tag</label>
+              <label>Category / Tag</label>
               <input 
                 type="text" 
-                placeholder="Contoh: Copywriting" 
+                placeholder="Example: Copywriting" 
                 value={newCategory}
                 onChange={e => setNewCategory(e.target.value)}
               />
             </div>
             
             <div className="form-group">
-              <label>Isi Prompt *</label>
+              <label>Prompt Content *</label>
               <textarea 
                 rows="6" 
-                placeholder="Tempel template prompt Anda di sini..."
+                placeholder="Paste your prompt template here..."
                 value={newContent}
                 onChange={e => setNewContent(e.target.value)}
               ></textarea>
             </div>
             
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setShowModal(false)} disabled={isSaving}>Batal</button>
+              <button className="btn-secondary" onClick={() => setShowModal(false)} disabled={isSaving}>Cancel</button>
               <button className="btn-primary" onClick={handleSavePrompt} disabled={isSaving || !newTitle || !newContent}>
-                {isSaving ? 'Menyimpan...' : 'Simpan Prompt'}
+                {isSaving ? 'Saving...' : 'Save Prompt'}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {promptToDelete && (
-        <div className="modal-overlay">
+      {promptToDelete && createPortal(
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
           <div className="modal-content glass-panel animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center' }}>
             <AlertTriangle size={48} color="#ff4a4a" style={{ margin: '0 auto 16px' }} />
-            <h3 style={{ marginBottom: '8px' }}>Konfirmasi Hapus</h3>
+            <h3 style={{ marginBottom: '8px' }}>Confirm Delete</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              Apakah Anda yakin ingin menghapus prompt ini? Data yang dihapus tidak dapat dikembalikan.
+              Are you sure you want to delete this prompt? Deleted data cannot be recovered.
             </p>
             <div className="modal-actions" style={{ justifyContent: 'center' }}>
-              <button className="btn-secondary" onClick={() => setPromptToDelete(null)}>Batal</button>
+              <button className="btn-secondary" onClick={() => setPromptToDelete(null)}>Cancel</button>
               <button className="btn-primary" style={{ backgroundColor: '#ff4a4a', borderColor: '#ff4a4a' }} onClick={confirmDelete}>
-                Ya, Hapus
+                Yes, Delete
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UploadCloud, FileImage, FolderOpen, CheckCircle2, AlertCircle } from 'lucide-react';
 import './AssetStorage.css';
 
@@ -11,12 +11,30 @@ const AssetStorage = () => {
   const [category, setCategory] = useState('Poster Edukasi');
   const [notes, setNotes] = useState('');
   
-  // Upload states
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null); // 'success' or 'error'
   
-  // Recent uploads
-  const [recentUploads, setRecentUploads] = useState([]);
+  // History
+  const [uploadHistory, setUploadHistory] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${API_URL}/upload/metadata`);
+      if (res.ok) {
+        const data = await res.json();
+        setUploadHistory(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch history', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -117,15 +135,7 @@ const AssetStorage = () => {
         const backendData = await backendRes.json();
 
         if (backendRes.ok) {
-          setRecentUploads(prev => [
-            {
-              id: backendData.dbId || Math.random(),
-              name: `${selectedFiles.length} file (${category})`,
-              category: category,
-              date: 'Baru saja'
-            },
-            ...prev
-          ].slice(0, 5));
+          fetchHistory(); // Refresh history
         } else {
           console.error('Metadata save failed:', backendData.error);
           hasError = true;
@@ -156,16 +166,16 @@ const AssetStorage = () => {
       <div className="view-header">
         <div>
           <h1 className="view-title">Storage</h1>
-          <p className="view-subtitle">Unggah dan sinkronisasi aset visual ke Google Drive.</p>
+          <p className="view-subtitle">Upload and sync visual assets to Google Drive.</p>
         </div>
         <button className="btn-secondary" onClick={() => window.open('https://drive.google.com/drive/folders/1Wa0UXQHjcACO1soCD96IUOq61up_i4fN', '_blank')}>
-          <FolderOpen size={18} /> Buka Drive
+          <FolderOpen size={18} /> Open Drive
         </button>
       </div>
 
       <div className="storage-content grid-2 glass-panel">
         <div className="upload-section">
-          <h3>Unggah Aset Baru</h3>
+          <h3>Upload New Assets</h3>
           
           <div 
             className={`drop-zone ${dragActive ? 'drag-active' : ''}`}
@@ -176,7 +186,7 @@ const AssetStorage = () => {
             onClick={() => document.getElementById('hidden-file-input').click()}
           >
             <UploadCloud size={48} className="drop-icon" />
-            <p className="drop-text">Seret file lebih dari satu ke sini, atau klik untuk memilih</p>
+            <p className="drop-text">Drag and drop multiple files here, or click to browse</p>
             <input 
               id="hidden-file-input"
               type="file" 
@@ -190,7 +200,7 @@ const AssetStorage = () => {
             {selectedFiles.length > 0 && (
               <div className="selected-files-list" style={{ marginTop: '16px', width: '100%', textAlign: 'left' }}>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', textAlign: 'center' }}>
-                  {selectedFiles.length} File terpilih
+                  {selectedFiles.length} files selected
                 </p>
                 {selectedFiles.map((file, idx) => (
                   <div key={idx} className="selected-file" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
@@ -201,7 +211,7 @@ const AssetStorage = () => {
                     <button 
                       onClick={(e) => handleRemoveFile(idx, e)}
                       style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: '0 4px' }}
-                      title="Hapus file ini"
+                      title="Remove this file"
                     >×</button>
                   </div>
                 ))}
@@ -210,9 +220,9 @@ const AssetStorage = () => {
           </div>
           
           <div className="form-group mt-4">
-            <label>Kategori Konten</label>
+            <label>Content Category</label>
             <select value={category} onChange={e => setCategory(e.target.value)}>
-              <option value="Poster Edukasi">Poster Edukasi</option>
+              <option value="Poster Edukasi">Educational Poster</option>
               <option value="Feed">Feed</option>
               <option value="Carousel">Carousel</option>
               <option value="Reels">Reels</option>
@@ -221,10 +231,10 @@ const AssetStorage = () => {
           </div>
           
           <div className="form-group mt-3">
-            <label>Catatan Tambahan (Metadata)</label>
+            <label>Additional Notes (Metadata)</label>
             <textarea 
               rows="3" 
-              placeholder="Tambahkan deskripsi, tag, atau tautan..."
+              placeholder="Add description, tags, or links..."
               value={notes}
               onChange={e => setNotes(e.target.value)}
             ></textarea>
@@ -232,13 +242,13 @@ const AssetStorage = () => {
           
           {uploadStatus === 'success' && (
             <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(46, 204, 113, 0.1)', color: '#2ecc71', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-              <CheckCircle2 size={16} /> Semua file berhasil diunggah ke Google Drive!
+              <CheckCircle2 size={16} /> All files successfully uploaded to Google Drive!
             </div>
           )}
 
           {uploadStatus === 'error' && (
             <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(231, 76, 60, 0.1)', color: '#e74c3c', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-              <AlertCircle size={16} /> Gagal mengunggah satu atau beberapa file.
+              <AlertCircle size={16} /> Failed to upload one or more files.
             </div>
           )}
 
@@ -247,27 +257,38 @@ const AssetStorage = () => {
             disabled={selectedFiles.length === 0 || isUploading}
             onClick={handleUpload}
           >
-            {isUploading ? `Mengunggah (${selectedFiles.length} file)...` : `Sinkronisasi ${selectedFiles.length > 0 ? selectedFiles.length : ''} File ke Google Drive`}
+            {isUploading ? `Uploading (${selectedFiles.length} files)...` : `Sync ${selectedFiles.length > 0 ? selectedFiles.length : ''} Files to Google Drive`}
           </button>
         </div>
         
         <div className="recent-assets">
-          <h3>Unggahan Terbaru Sesi Ini</h3>
-          {recentUploads.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '16px' }}>Belum ada file yang diunggah.</p>
+          <h3>Upload History</h3>
+          {isLoadingHistory ? (
+             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '16px' }}>Loading history...</p>
+          ) : uploadHistory.length === 0 ? (
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '16px' }}>No files uploaded yet.</p>
           ) : (
             <div className="assets-list">
-              {recentUploads.map((item, idx) => (
-                <div key={idx} className="asset-card">
-                  <div className="asset-thumbnail">
-                    <FileImage size={32} color="var(--text-secondary)" />
+              {uploadHistory.map((item, idx) => {
+                const date = new Date(item.createdAt).toLocaleDateString();
+                const time = new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div 
+                    key={idx} 
+                    className="asset-card" 
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => window.open(`https://drive.google.com/drive/folders/${item.driveFolderId}`, '_blank')}
+                  >
+                    <div className="asset-thumbnail">
+                      <FileImage size={32} color="var(--text-secondary)" />
+                    </div>
+                    <div className="asset-info">
+                      <h4 style={{ wordBreak: 'break-all' }}>{item.folderName}</h4>
+                      <span>{date} {time} • {item.kategori} • {item.fileCount} files</span>
+                    </div>
                   </div>
-                  <div className="asset-info">
-                    <h4 style={{ wordBreak: 'break-all' }}>{item.name}</h4>
-                    <span>{item.date} • {item.category}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

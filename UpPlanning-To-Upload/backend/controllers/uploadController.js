@@ -128,3 +128,24 @@ exports.saveMetadata = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getMetadata = async (req, res) => {
+  if (!db) return res.status(500).json({ error: 'Database not initialized' });
+
+  try {
+    const snapshot = await db.collection(METADATA_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get();
+      
+    const history = [];
+    snapshot.forEach(doc => {
+      history.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.status(200).json(history);
+  } catch (error) {
+    console.error('Get Metadata Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
