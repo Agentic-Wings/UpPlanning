@@ -337,7 +337,7 @@ const TasksView = () => {
           <div className="modal-content glass-panel animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center' }}>
             <h3 style={{ color: '#ef4444', marginBottom: '16px' }}>Confirm Delete</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>
-              Apakah Anda yakin ingin menghapus tugas <strong>"{editingTask?.title}"</strong>? Data ini akan terhapus secara permanen.
+              Are you sure you want to delete the task <strong>"{editingTask?.title}"</strong>? This data will be permanently deleted.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button className="btn-secondary" onClick={() => setShowConfirmDelete(false)}>Cancel</button>

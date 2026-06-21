@@ -446,9 +446,9 @@ const BrainstormChat = () => {
             }}>
               <Trash2 size={22} color="#ef4444" />
             </div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '17px' }}>Hapus Riwayat Chat?</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '0 0 24px', lineHeight: '1.6' }}>
-              Chat yang dihapus tidak bisa dikembalikan. Yakin ingin melanjutkan?
+            <h3 style={{ margin: '0 0 8px', fontSize: '17px' }}>Delete Chat History?</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.5' }}>
+              Deleted chats cannot be recovered. Are you sure you want to continue?
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button
