@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: 100%;
+  height: calc(100vh - 120px);
+  min-height: 500px;
 }
 
 .drawing-toolbar {
@@ -91,7 +92,6 @@
   position: relative;
   background: var(--bg-card);
   min-height: 500px;
-  margin-bottom: 30px; /* Add breathing room at bottom */
   touch-action: none; /* Prevent scrolling while drawing */
 }
 
