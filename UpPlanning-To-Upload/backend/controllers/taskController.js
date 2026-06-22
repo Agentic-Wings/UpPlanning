@@ -7,7 +7,14 @@ exports.getTasks = async (req, res) => {
   if (!db) return res.status(500).json({ error: 'Database tidak terkoneksi. Mohon pastikan file firebase-service-account.json ada atau ENV sudah diatur.' });
   try {
     const snapshot = await db.collection(COLLECTION_NAME).get();
-    const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const tasks = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        subtasks: data.subtasks || [] // Ensure backward compatibility
+      };
+    });
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -18,12 +25,13 @@ exports.getTasks = async (req, res) => {
 exports.createTask = async (req, res) => {
   if (!db) return res.status(500).json({ error: 'Database tidak terkoneksi. Mohon pastikan file firebase-service-account.json ada atau ENV sudah diatur.' });
   try {
-    const { title, description, deadline, status } = req.body;
+    const { title, description, deadline, status, subtasks } = req.body;
     const newTask = {
       title,
       description: description || '',
       deadline: deadline || '',
       status: status || 'todo', // 'todo', 'in_progress', 'done'
+      subtasks: subtasks || [],
       createdAt: new Date().toISOString()
     };
     const docRef = await db.collection(COLLECTION_NAME).add(newTask);

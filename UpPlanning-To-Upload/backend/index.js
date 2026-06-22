@@ -20,6 +20,8 @@ router.use('/prompts', require('./routes/promptRoutes'));
 router.use('/upload', require('./routes/uploadRoutes'));
 router.use('/tasks', require('./routes/taskRoutes'));
 router.use('/chat', require('./routes/chatRoutes'));
+router.use('/drawings', require('./routes/drawingRoutes'));
+router.use('/streaks', require('./routes/streakRoutes'));
 
 router.get('/', (req, res) => {
   res.json({ message: 'UpPlanning Backend is running!' });
