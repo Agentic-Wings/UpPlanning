@@ -39,7 +39,14 @@ const PromptHub = () => {
       }
       
       if (Array.isArray(data)) {
-        setPrompts(data);
+        // Sort by usageCount descending, then createdAt
+        const sortedData = data.sort((a, b) => {
+          const usageA = a.usageCount || 0;
+          const usageB = b.usageCount || 0;
+          if (usageB !== usageA) return usageB - usageA;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        setPrompts(sortedData);
       }
     } catch (error) {
       console.error('Error fetching prompts:', error);
@@ -172,10 +179,19 @@ const PromptHub = () => {
           {filteredPrompts.length === 0 ? (
             <div style={{ padding: '20px', color: 'var(--text-secondary)' }}>No prompts found.</div>
           ) : (
-            filteredPrompts.map(prompt => (
-              <div key={prompt.id} className="prompt-card glass-panel">
+            filteredPrompts.map((prompt, index) => {
+              const isTop = index < 3 && (prompt.usageCount || 0) > 0;
+              return (
+              <div key={prompt.id} className={`prompt-card glass-panel ${isTop ? 'top-prompt' : ''}`} style={isTop ? { border: '1px solid var(--color-green-border)' } : {}}>
                 <div className="prompt-header">
-                  <h3>{prompt.judul}</h3>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <h3>{prompt.judul}</h3>
+                    {isTop && (
+                      <span style={{ fontSize: '0.7rem', background: 'var(--color-green-bg)', color: 'var(--color-green)', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        🔥 Top
+                      </span>
+                    )}
+                  </div>
                   <div className="category-tag">
                     <Tag size={12} /> {prompt.kategori}
                   </div>
@@ -220,7 +236,8 @@ const PromptHub = () => {
                   </div>
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
       )}

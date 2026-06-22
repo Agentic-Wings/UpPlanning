@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, Calendar as CalendarIcon, Clock, CheckCircle2, PlayCircle, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Calendar as CalendarIcon, Clock, CheckCircle2, PlayCircle, AlertCircle, ListTodo, X } from 'lucide-react';
 import './TasksView.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -20,6 +20,12 @@ const TasksView = () => {
   const [newDescription, setNewDescription] = useState('');
   const [newDeadline, setNewDeadline] = useState('');
   const [newStatus, setNewStatus] = useState('todo'); // todo, in_progress, done
+  const [newSubtasks, setNewSubtasks] = useState([]);
+  const [subtaskInput, setSubtaskInput] = useState('');
+
+  const triggerActivity = () => {
+    fetch(`${API_URL}/streaks/record`, { method: 'POST' }).catch(() => {});
+  };
 
   useEffect(() => {
     fetchTasks();
@@ -51,6 +57,8 @@ const TasksView = () => {
     setNewDescription('');
     setNewDeadline('');
     setNewStatus(status);
+    setNewSubtasks([]);
+    setSubtaskInput('');
     setShowModal(true);
   };
 
@@ -60,6 +68,8 @@ const TasksView = () => {
     setNewDescription(task.description || '');
     setNewDeadline(task.deadline || '');
     setNewStatus(task.status || 'todo');
+    setNewSubtasks(task.subtasks || []);
+    setSubtaskInput('');
     setShowModal(true);
   };
 
@@ -71,7 +81,8 @@ const TasksView = () => {
       title: newTitle,
       description: newDescription,
       deadline: newDeadline,
-      status: newStatus
+      status: newStatus,
+      subtasks: newSubtasks
     };
 
     try {
@@ -88,6 +99,7 @@ const TasksView = () => {
 
       if (res.ok) {
         setShowModal(false);
+        triggerActivity();
         fetchTasks();
       } else {
         const errorData = await res.json().catch(() => ({}));
@@ -135,6 +147,8 @@ const TasksView = () => {
         const errorData = await res.json().catch(() => ({}));
         alert(`Gagal mengubah status: ${errorData.error || 'Server error'}`);
         fetchTasks(); // Revert on failure
+      } else {
+        triggerActivity();
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -147,6 +161,22 @@ const TasksView = () => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const handleAddSubtask = (e) => {
+    if (e.key === 'Enter' && subtaskInput.trim()) {
+      e.preventDefault();
+      setNewSubtasks([...newSubtasks, { id: Date.now().toString(), text: subtaskInput.trim(), isCompleted: false }]);
+      setSubtaskInput('');
+    }
+  };
+
+  const toggleSubtask = (id) => {
+    setNewSubtasks(newSubtasks.map(s => s.id === id ? { ...s, isCompleted: !s.isCompleted } : s));
+  };
+
+  const removeSubtask = (id) => {
+    setNewSubtasks(newSubtasks.filter(s => s.id !== id));
   };
 
   const renderTaskCards = (status) => {
@@ -176,6 +206,20 @@ const TasksView = () => {
             <span className={new Date(task.deadline) < new Date() && status !== 'done' ? 'overdue' : ''}>
               {formatDate(task.deadline)}
             </span>
+          </div>
+        )}
+
+        {task.subtasks && task.subtasks.length > 0 && (
+          <div className="task-progress-bar-container">
+            <div className="task-progress-text">
+              <ListTodo size={12} /> {task.subtasks.filter(s => s.isCompleted).length}/{task.subtasks.length} Selesai
+            </div>
+            <div className="task-progress-bg">
+              <div 
+                className="task-progress-fill" 
+                style={{ width: `${(task.subtasks.filter(s => s.isCompleted).length / task.subtasks.length) * 100}%` }}
+              ></div>
+            </div>
           </div>
         )}
         
@@ -311,6 +355,36 @@ const TasksView = () => {
                 <option value="in_progress">In Progress</option>
                 <option value="done">Done</option>
               </select>
+            </div>
+
+            <div className="form-group">
+              <label>Sub-tasks (Checklist) <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>- Tekan Enter untuk tambah</span></label>
+              <div className="subtasks-list">
+                {newSubtasks.map((st) => (
+                  <div key={st.id} className="subtask-item">
+                    <input 
+                      type="checkbox" 
+                      checked={st.isCompleted} 
+                      onChange={() => toggleSubtask(st.id)} 
+                      id={`st-${st.id}`}
+                    />
+                    <label htmlFor={`st-${st.id}`} className={st.isCompleted ? 'subtask-completed' : ''} style={{flex: 1, margin: 0, cursor: 'pointer', fontSize: '0.9rem'}}>
+                      {st.text}
+                    </label>
+                    <button className="btn-icon-small" onClick={() => removeSubtask(st.id)} style={{color: '#ef4444'}}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <input 
+                  type="text" 
+                  placeholder="+ Tambah sub-task baru..." 
+                  value={subtaskInput}
+                  onChange={e => setSubtaskInput(e.target.value)}
+                  onKeyDown={handleAddSubtask}
+                  style={{marginTop: '8px', fontSize: '0.9rem', padding: '8px 12px'}}
+                />
+              </div>
             </div>
             
             <div className="modal-actions" style={{ justifyContent: editingTask ? 'space-between' : 'flex-end', marginTop: '24px' }}>

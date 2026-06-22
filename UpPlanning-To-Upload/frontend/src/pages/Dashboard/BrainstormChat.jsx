@@ -61,6 +61,11 @@ const BrainstormChat = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [topPrompts, setTopPrompts] = useState([]);
+
+  const triggerActivity = () => {
+    fetch(`${API_URL}/streaks/record`, { method: 'POST' }).catch(() => {});
+  };
 
   // Settings Modal
   const [showSettings, setShowSettings] = useState(false);
@@ -80,6 +85,7 @@ const BrainstormChat = () => {
   useEffect(() => {
     fetchSessions();
     fetchMemory();
+    fetchTopPrompts();
   }, []);
 
   useEffect(() => {
@@ -112,6 +118,25 @@ const BrainstormChat = () => {
     } catch (error) {
       console.error('Error saving memory:', error);
     }
+  };
+
+  const fetchTopPrompts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/prompts`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const sorted = data.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+        setTopPrompts(sorted.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching top prompts:', error);
+    }
+  };
+
+  const handleUsePrompt = async (prompt) => {
+    setInputMessage(prompt.isiTeks);
+    // Call API to increment usage
+    fetch(`${API_URL}/prompts/${prompt.id}/use`, { method: 'POST' }).catch(() => {});
   };
 
   const fetchSessions = async () => {
@@ -254,6 +279,7 @@ const BrainstormChat = () => {
       setMessages([...newMessages, { role: 'assistant', content: 'Maaf, terjadi kesalahan koneksi. Silakan coba lagi.' }]);
     } finally {
       setIsTyping(false);
+      triggerActivity();
     }
   };
 
@@ -338,6 +364,32 @@ const BrainstormChat = () => {
           )}
           <div ref={messagesEndRef} />
         </div>
+
+        {topPrompts.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px', padding: '10px 20px 0', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            {topPrompts.map(p => (
+              <button 
+                key={p.id} 
+                onClick={() => handleUsePrompt(p)}
+                style={{
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-secondary)',
+                  padding: '6px 12px',
+                  borderRadius: '16px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.target.style.background = 'var(--bg-hover)'; e.target.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.target.style.background = 'var(--bg-subtle)'; e.target.style.color = 'var(--text-secondary)'; }}
+              >
+                🔥 {p.judul}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="chat-input-area">
           <textarea

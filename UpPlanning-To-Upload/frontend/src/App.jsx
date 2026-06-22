@@ -8,6 +8,7 @@ import AssetStorage from './pages/Dashboard/AssetStorage';
 import PromptHub from './pages/Dashboard/PromptHub';
 import TasksView from './pages/Dashboard/TasksView';
 import BrainstormChat from './pages/Dashboard/BrainstormChat';
+import DrawingBoard from './pages/Dashboard/DrawingBoard';
 import StarBackground from './components/StarBackground';
 import Login from './pages/Login/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -55,6 +56,7 @@ function App() {
             <Route path="chat" element={<BrainstormChat />} />
             <Route path="storage" element={<AssetStorage />} />
             <Route path="prompts" element={<PromptHub />} />
+            <Route path="drawing" element={<DrawingBoard />} />
           </Route>
         </Routes>
       </AuthProvider>

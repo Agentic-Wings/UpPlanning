@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Calendar, FolderHeart, LayoutDashboard, LogOut, Menu, X, ClipboardList, MessageCircle } from 'lucide-react';
+import { Moon, Sun, Calendar, FolderHeart, LayoutDashboard, LogOut, Menu, X, ClipboardList, MessageCircle, Palette, Flame } from 'lucide-react';
 import UpMascot from '../components/UpMascot';
 import './DashboardLayout.css';
 
@@ -15,6 +15,16 @@ const DashboardLayout = ({ theme, toggleTheme }) => {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const [streak, setStreak] = React.useState({ currentStreak: 0, isProductiveToday: false });
+
+  React.useEffect(() => {
+    fetch(`${API_URL}/streaks`)
+      .then(res => res.json())
+      .then(data => setStreak(data))
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="dashboard-container">
@@ -53,6 +63,11 @@ const DashboardLayout = ({ theme, toggleTheme }) => {
             <LayoutDashboard size={20} />
             <span>Prompt</span>
           </NavLink>
+
+          <NavLink to="/dashboard/drawing" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
+            <Palette size={20} />
+            <span>Drawing Board</span>
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">
@@ -72,7 +87,26 @@ const DashboardLayout = ({ theme, toggleTheme }) => {
             </button>
             <h2>Dashboard</h2>
           </div>
-          <div className="header-actions">
+          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div 
+              style={{
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px', 
+                background: streak.isProductiveToday ? 'var(--color-green-bg)' : 'var(--bg-subtle)',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: `1px solid ${streak.isProductiveToday ? 'var(--color-green-border)' : 'var(--border-color)'}`,
+                color: streak.isProductiveToday ? 'var(--color-green)' : 'var(--text-secondary)',
+                fontWeight: '600',
+                fontSize: '0.85rem'
+              }}
+              title={streak.isProductiveToday ? "Hari ini produktif! Streak aman." : "Lakukan 1 tugas atau chat untuk mengamankan streak hari ini!"}
+            >
+              <Flame size={16} fill={streak.isProductiveToday ? 'var(--color-green)' : 'none'} className={streak.isProductiveToday ? 'animate-pulse' : ''} />
+              {streak.currentStreak}
+            </div>
+            
             <button className="btn-icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
