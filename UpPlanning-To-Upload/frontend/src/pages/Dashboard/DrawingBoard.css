@@ -91,6 +91,7 @@
   position: relative;
   background: var(--bg-card);
   min-height: 500px;
+  margin-bottom: 30px; /* Add breathing room at bottom */
   touch-action: none; /* Prevent scrolling while drawing */
 }
 
