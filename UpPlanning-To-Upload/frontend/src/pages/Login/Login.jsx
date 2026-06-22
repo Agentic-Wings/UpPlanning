@@ -141,13 +141,14 @@ const Login = () => {
 
   if (step === 3) {
     return (
-      <div className="login-container">
+      <div className="login-container" style={{ padding: 0 }}>
         <div className="greeting-overlay">
+          <div className="greeting-glow-bg"></div>
           <div className="greeting-icon-wrapper">
-            <ShieldCheck size={60} color="var(--color-green)" style={{ filter: 'drop-shadow(0 0 10px rgba(46, 204, 113, 0.4))' }} />
+            <ShieldCheck size={80} color="var(--color-green)" style={{ filter: 'drop-shadow(0 0 20px rgba(46, 204, 113, 0.6))' }} />
           </div>
-          <h1>{getGreeting()} Tuan Muda</h1>
-          <p>Preparing your workspace...</p>
+          <h1>{getGreeting()}, Tuan Muda</h1>
+          <p>Access Granted • Preparing Workspace</p>
         </div>
       </div>
     );

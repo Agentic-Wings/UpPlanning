@@ -467,40 +467,90 @@
   background: #e60000;
 }
 
-/* STEP 3 GREETING */
+/* STEP 3 GREETING ELEGANT REDESIGN */
 .greeting-overlay {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  animation: fadeIn 0.5s ease-in-out;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-main) 100%);
+  animation: greetingFadeIn 1s ease-out forwards;
   text-align: center;
+  z-index: 1000;
+}
+
+.greeting-icon-wrapper {
+  margin-bottom: 24px;
+  animation: elegantFloat 4s ease-in-out infinite, iconPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .greeting-overlay h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  background: var(--accent-gradient);
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-green) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideUpFade 0.8s ease-out 0.3s forwards;
+  text-shadow: 0 4px 20px rgba(46, 204, 113, 0.2);
 }
 
 .greeting-overlay p {
   color: var(--text-secondary);
-  font-size: 1.1rem;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideUpFade 0.8s ease-out 0.6s forwards;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+.greeting-glow-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(46, 204, 113, 0.08) 0%, rgba(0,0,0,0) 70%);
+  border-radius: 50%;
+  animation: pulseGlowBg 4s infinite alternate;
+  z-index: -1;
+  pointer-events: none;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes greetingFadeIn {
+  from { opacity: 0; background: var(--bg-main); }
+  to { opacity: 1; background: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-main) 100%); }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes iconPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes elegantFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulseGlowBg {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
 }
 
 @media (max-width: 900px) {

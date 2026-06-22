@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Save, Trash2, Eraser, PenTool, RefreshCcw, CheckCircle2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Save, Trash2, Eraser, PenTool, RefreshCcw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import './DrawingBoard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -15,6 +16,7 @@ const DrawingBoard = () => {
   const [drawingId, setDrawingId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   // Theme aware default color
   useEffect(() => {
@@ -180,9 +182,12 @@ const DrawingBoard = () => {
   };
 
   const clearCanvas = () => {
-    if (window.confirm('Clear the entire canvas?')) {
-      setElements([]);
-    }
+    setShowClearConfirm(true);
+  };
+
+  const confirmClear = () => {
+    setElements([]);
+    setShowClearConfirm(false);
   };
 
   // Adjust canvas resolution based on container
@@ -275,6 +280,25 @@ const DrawingBoard = () => {
           onTouchEnd={stopDrawing}
         />
       </div>
+
+      {showClearConfirm && createPortal(
+        <div className="modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="modal-content glass-panel animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <AlertTriangle size={48} color="#ff4a4a" style={{ margin: '0 auto 16px' }} />
+            <h3 style={{ marginBottom: '8px' }}>Clear Canvas</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+              Are you sure you want to clear the entire canvas? This cannot be undone.
+            </p>
+            <div className="modal-actions" style={{ justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setShowClearConfirm(false)}>Cancel</button>
+              <button className="btn-primary" style={{ backgroundColor: '#ff4a4a', borderColor: '#ff4a4a' }} onClick={confirmClear}>
+                Yes, Clear
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
